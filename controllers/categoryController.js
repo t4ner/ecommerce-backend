@@ -3,7 +3,7 @@ import { sendSuccess, sendError } from "../utils/responseHandler.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const createCategory = asyncHandler(async (req, res) => {
-  const { name, slug, parentId, description, isVisible } = req.body;
+  const { name, slug, parentId, description, imageUrl, isVisible } = req.body;
   if (await Category.findOne({ slug })) {
     return sendError(res, "This slug is already in use", 400);
   }
@@ -15,6 +15,7 @@ export const createCategory = asyncHandler(async (req, res) => {
     slug: slug.trim().toLowerCase(),
     parentId: parentId || null,
     description: description?.trim() ?? "",
+    imageUrl: imageUrl?.trim() ?? "",
     isVisible: isVisible !== undefined ? isVisible : false,
   });
   return sendSuccess(res, category, "Category created successfully", 201);
@@ -50,7 +51,7 @@ export const getCategoryById = asyncHandler(async (req, res) => {
 
 export const updateCategory = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { name, slug, parentId, description, isVisible } = req.body;
+  const { name, slug, parentId, description, imageUrl, isVisible } = req.body;
   const category = await Category.findById(id);
   if (!category) {
     return sendError(res, "Category not found", 404);
@@ -78,6 +79,7 @@ export const updateCategory = asyncHandler(async (req, res) => {
   category.parentId =
     parentId === undefined ? category.parentId : parentId || null;
   category.description = description?.trim() ?? category.description;
+  category.imageUrl = imageUrl?.trim() ?? category.imageUrl;
   if (isVisible !== undefined) {
     category.isVisible = isVisible;
   }

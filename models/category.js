@@ -33,6 +33,11 @@ const CategorySchema = new mongoose.Schema(
       default: "",
       maxlength: [500, "Description must be at most 500 characters"],
     },
+    imageUrl: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     isVisible: {
       type: Boolean,
       default: false,
