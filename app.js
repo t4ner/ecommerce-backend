@@ -1,6 +1,7 @@
 import express from "express";
 import connectDB from "./config/db.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
+import uploadRoutes from "./routes/uploadRoutes.js";
 import cors from "cors";
 
 const app = express();
@@ -21,6 +22,7 @@ app.get("/", (req, res) => {
 
 // API Routes
 app.use("/api/categories", categoryRoutes);
+app.use("/api/upload", uploadRoutes);
 
 // Sunucuyu başlat (EN SON)
 app.listen(5858, () => {
