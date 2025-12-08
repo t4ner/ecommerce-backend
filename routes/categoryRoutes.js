@@ -7,7 +7,6 @@ import {
   deleteCategory,
   getAllCategoriesTree,
 } from "../controllers/categoryController.js";
-import { validateCategory } from "../middleware/validator.js";
 
 const router = express.Router();
 
@@ -22,10 +21,10 @@ const router = express.Router();
  * GET    /api/categories/getAllCategoriesTree  - Kategorileri ağaç yapısında getir
  */
 
-router.post("/createCategory", validateCategory, createCategory);
+router.post("/createCategory", createCategory);
 router.get("/getAllCategories", getCategories);
 router.delete("/deleteCategory/:id", deleteCategory);
-router.put("/updateCategory/:id", validateCategory, updateCategory);
+router.put("/updateCategory/:id", updateCategory);
 router.get("/getCategoryBySlug/:slug", getCategoryBySlug);
 router.get("/getAllCategoriesTree", getAllCategoriesTree);
 
