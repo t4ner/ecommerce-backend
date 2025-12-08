@@ -1,31 +1,43 @@
-import express from "express";
-import connectDB from "./config/db.js";
-import categoryRoutes from "./routes/categoryRoutes.js";
-import uploadRoutes from "./routes/uploadRoutes.js";
-import cors from "cors";
+import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+
+import connectDB from './config/db.js';
+import categoryRoutes from './routes/categoryRoutes.js';
+import uploadRoutes from './routes/uploadRoutes.js';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
+
+connectDB();
 
 const app = express();
 
-// Database bağlantısını başlat
-connectDB();
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || '*',
+    credentials: true,
+  })
+);
+app.use(helmet());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(morgan('dev')); // Always use dev log
 
-// Middleware sırası önemli!
-app.use(cors()); // Önce CORS
-app.use(express.json()); // Sonra JSON parser
-app.use(express.urlencoded({ extended: true })); // URL encoded data
-
-// Root route
-app.get("/", (req, res) => {
-  console.log("API Çalışıyor");
-  res.send("API Çalışıyor");
+// Routes
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'E-commerce API is working 🚀',
+    version: '1.0.0',
+    timestamp: new Date().toISOString(),
+  });
 });
+app.use('/api/categories', categoryRoutes);
+app.use('/api/upload', uploadRoutes);
 
-// API Routes
-app.use("/api/categories", categoryRoutes);
-app.use("/api/upload", uploadRoutes);
+// Error Handling
+app.use(notFoundHandler);
+app.use(errorHandler);
 
-// Sunucuyu başlat (EN SON)
-app.listen(5858, () => {
-  console.log(`🚀 Server 5858 portunda çalışıyor`);
-  console.log(`📍 API URL: http://localhost:5858`);
-});
+export default app;

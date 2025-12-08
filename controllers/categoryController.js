@@ -1,163 +1,114 @@
 import Category from "../models/Category.js";
+import { sendSuccess, sendError } from "../utils/responseHandler.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
-// Yeni kategori oluştur
-export const createCategory = async (req, res) => {
-  try {
-    const { name, slug, parentId, description } = req.body;
-
-    if (!name || !slug) {
-      return res.status(400).json({ message: "Name ve slug zorunludur." });
-    }
-
-    // Slug benzersiz mi kontrol et
-    const existing = await Category.findOne({ slug });
-    if (existing) {
-      return res.status(400).json({ message: "Bu slug zaten kullanılıyor." });
-    }
-
-    const category = new Category({
-      name,
-      slug,
-      parentId: parentId || null,
-      description,
-    });
-
-    await category.save();
-
-    res.status(201).json({
-      message: "Kategori oluşturuldu.",
-      category,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Sunucu hatası." });
+export const createCategory = asyncHandler(async (req, res) => {
+  const { name, slug, parentId, description } = req.body;
+  if (await Category.findOne({ slug })) {
+    return sendError(res, "This slug is already in use", 400);
   }
-};
-
-// Tüm kategorileri getir
-export const getCategories = async (req, res) => {
-  try {
-    const categories = await Category.find().sort({ createdAt: -1 });
-    res.status(200).json(categories);
-  } catch (error) {
-    res.status(500).json({ message: "Sunucu hatası." });
+  if (parentId && !(await Category.findById(parentId))) {
+    return sendError(res, "Parent category not found", 404);
   }
-};
+  const category = await Category.create({
+    name: name.trim(),
+    slug: slug.trim().toLowerCase(),
+    parentId: parentId || null,
+    description: description?.trim() ?? "",
+  });
+  return sendSuccess(res, category, "Category created successfully", 201);
+});
 
-// Tek kategori getir
-export const getCategoryBySlug = async (req, res) => {
-  try {
-    const { slug } = req.params;
+export const getCategories = asyncHandler(async (req, res) => {
+  const categories = await Category.find().sort({ createdAt: -1 });
+  return sendSuccess(res, categories, "Categories fetched successfully");
+});
 
-    const category = await Category.findOne({ slug });
-
-    if (!category) {
-      return res.status(404).json({ message: "Kategori bulunamadı." });
-    }
-
-    res.status(200).json(category);
-  } catch (error) {
-    res.status(500).json({ message: "Sunucu hatası." });
+export const getCategoryBySlug = asyncHandler(async (req, res) => {
+  const { slug } = req.params;
+  const category = await Category.findOne({ slug });
+  if (!category) {
+    return sendError(res, "Category not found", 404);
   }
-};
+  return sendSuccess(res, category, "Category fetched successfully");
+});
 
-// Kategori güncelle
-export const updateCategory = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { name, slug, parentId, description } = req.body;
+export const getCategoryById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const category = await Category.findById(id);
+  if (!category) {
+    return sendError(res, "Category not found", 404);
+  }
+  return sendSuccess(res, category, "Category fetched successfully");
+});
 
-    // Slug değiştiyse benzersiz olmalı
-    if (slug) {
-      const existSlug = await Category.findOne({
-        slug,
+export const updateCategory = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { name, slug, parentId, description } = req.body;
+  const category = await Category.findById(id);
+  if (!category) {
+    return sendError(res, "Category not found", 404);
+  }
+  if (slug && slug.trim().toLowerCase() !== category.slug) {
+    if (
+      await Category.findOne({
+        slug: slug.trim().toLowerCase(),
         _id: { $ne: id },
-      });
-
-      if (existSlug) {
-        return res.status(400).json({ message: "Bu slug kullanılıyor." });
-      }
+      })
+    ) {
+      return sendError(res, "This slug is already in use", 400);
     }
+  }
+  if (parentId) {
+    if (parentId === id) {
+      return sendError(res, "A category cannot be its own parent", 400);
+    }
+    if (!(await Category.findById(parentId))) {
+      return sendError(res, "Parent category not found", 404);
+    }
+  }
+  category.name = name?.trim() ?? category.name;
+  category.slug = slug?.trim().toLowerCase() ?? category.slug;
+  category.parentId =
+    parentId === undefined ? category.parentId : parentId || null;
+  category.description = description?.trim() ?? category.description;
+  await category.save();
+  return sendSuccess(res, category, "Category updated successfully");
+});
 
-    const updated = await Category.findByIdAndUpdate(
-      id,
-      {
-        name,
-        slug,
-        parentId: parentId || null,
-        description,
-      },
-      { new: true }
+export const deleteCategory = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const category = await Category.findById(id);
+  if (!category) {
+    return sendError(res, "Category not found", 404);
+  }
+  if (await Category.findOne({ parentId: id })) {
+    return sendError(
+      res,
+      "Category has subcategories. Please delete them first.",
+      400
     );
-
-    if (!updated) {
-      return res.status(404).json({ message: "Kategori bulunamadı." });
-    }
-
-    res.status(200).json({
-      message: "Kategori güncellendi.",
-      category: updated,
-    });
-  } catch (error) {
-    res.status(500).json({ message: "Sunucu hatası." });
   }
-};
+  await Category.findByIdAndDelete(id);
+  return sendSuccess(res, null, "Category deleted successfully");
+});
 
-// Kategori sil
-export const deleteCategory = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    // Alt kategorisi var mı kontrol et
-    const sub = await Category.findOne({ parentId: id });
-    if (sub) {
-      return res.status(400).json({
-        message: "Bu kategorinin alt kategorileri var, önce onları sil.",
-      });
+export const getCategoriesTree = asyncHandler(async (req, res) => {
+  const categories = await Category.find().lean();
+  const categoryMap = {};
+  categories.forEach((category) => {
+    categoryMap[category._id.toString()] = { ...category, children: [] };
+  });
+  const tree = [];
+  categories.forEach((category) => {
+    if (category.parentId) {
+      const parent = categoryMap[category.parentId.toString()];
+      if (parent) parent.children.push(categoryMap[category._id.toString()]);
+    } else {
+      tree.push(categoryMap[category._id.toString()]);
     }
+  });
+  return sendSuccess(res, tree, "Category tree fetched successfully");
+});
 
-    const deleted = await Category.findByIdAndDelete(id);
-
-    if (!deleted) {
-      return res.status(404).json({ message: "Kategori bulunamadı." });
-    }
-
-    res.status(200).json({ message: "Kategori silindi." });
-  } catch (error) {
-    res.status(500).json({ message: "Sunucu hatası." });
-  }
-};
-
-// TÜM KATEGORİLERİ AĞAÇ YAPISINDA GETİR
-export const getCategoriesTree = async (req, res) => {
-  try {
-    const categories = await Category.find().lean();
-
-    // Tüm kategorileri ID -> kategori olarak maple
-    const map = {};
-    categories.forEach((cat) => {
-      map[cat._id.toString()] = {
-        ...cat,
-        children: [],
-      };
-    });
-
-    const tree = [];
-
-    categories.forEach((cat) => {
-      if (cat.parentId) {
-        const parentKey = cat.parentId.toString();
-        if (map[parentKey]) {
-          map[parentKey].children.push(map[cat._id.toString()]);
-        }
-      } else {
-        tree.push(map[cat._id.toString()]);
-      }
-    });
-
-    res.status(200).json(tree);
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Sunucu hatası." });
-  }
-};
+export const getAllCategoriesTree = getCategoriesTree;
