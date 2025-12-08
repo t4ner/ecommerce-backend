@@ -33,6 +33,10 @@ const CategorySchema = new mongoose.Schema(
       default: "",
       maxlength: [500, "Description must be at most 500 characters"],
     },
+    isVisible: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true, versionKey: false }
 );

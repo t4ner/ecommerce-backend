@@ -6,6 +6,7 @@ import {
   updateCategory,
   deleteCategory,
   getAllCategoriesTree,
+  getVisibleCategories,
 } from "../controllers/categoryController.js";
 
 const router = express.Router();
@@ -19,6 +20,7 @@ const router = express.Router();
  * PUT    /api/categories/updateCategory/:id    - Kategori güncelle
  * GET    /api/categories/getCategoryBySlug/:slug - Slug'a göre kategori getir
  * GET    /api/categories/getAllCategoriesTree  - Kategorileri ağaç yapısında getir
+ * GET    /api/categories/getVisibleCategories  - Sadece görünür kategorileri getir
  */
 
 router.post("/createCategory", createCategory);
@@ -27,5 +29,6 @@ router.delete("/deleteCategory/:id", deleteCategory);
 router.put("/updateCategory/:id", updateCategory);
 router.get("/getCategoryBySlug/:slug", getCategoryBySlug);
 router.get("/getAllCategoriesTree", getAllCategoriesTree);
+router.get("/getVisibleCategories", getVisibleCategories);
 
 export default router;

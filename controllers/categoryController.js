@@ -3,7 +3,7 @@ import { sendSuccess, sendError } from "../utils/responseHandler.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const createCategory = asyncHandler(async (req, res) => {
-  const { name, slug, parentId, description } = req.body;
+  const { name, slug, parentId, description, isVisible } = req.body;
   if (await Category.findOne({ slug })) {
     return sendError(res, "This slug is already in use", 400);
   }
@@ -15,12 +15,18 @@ export const createCategory = asyncHandler(async (req, res) => {
     slug: slug.trim().toLowerCase(),
     parentId: parentId || null,
     description: description?.trim() ?? "",
+    isVisible: isVisible !== undefined ? isVisible : false,
   });
   return sendSuccess(res, category, "Category created successfully", 201);
 });
 
 export const getCategories = asyncHandler(async (req, res) => {
-  const categories = await Category.find().sort({ createdAt: -1 });
+  const { isVisible } = req.query;
+  const query = {};
+  if (isVisible !== undefined) {
+    query.isVisible = isVisible === "true";
+  }
+  const categories = await Category.find(query).sort({ createdAt: -1 });
   return sendSuccess(res, categories, "Categories fetched successfully");
 });
 
@@ -44,7 +50,7 @@ export const getCategoryById = asyncHandler(async (req, res) => {
 
 export const updateCategory = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { name, slug, parentId, description } = req.body;
+  const { name, slug, parentId, description, isVisible } = req.body;
   const category = await Category.findById(id);
   if (!category) {
     return sendError(res, "Category not found", 404);
@@ -72,6 +78,9 @@ export const updateCategory = asyncHandler(async (req, res) => {
   category.parentId =
     parentId === undefined ? category.parentId : parentId || null;
   category.description = description?.trim() ?? category.description;
+  if (isVisible !== undefined) {
+    category.isVisible = isVisible;
+  }
   await category.save();
   return sendSuccess(res, category, "Category updated successfully");
 });
@@ -94,7 +103,12 @@ export const deleteCategory = asyncHandler(async (req, res) => {
 });
 
 export const getCategoriesTree = asyncHandler(async (req, res) => {
-  const categories = await Category.find().lean();
+  const { isVisible } = req.query;
+  const query = {};
+  if (isVisible !== undefined) {
+    query.isVisible = isVisible === "true";
+  }
+  const categories = await Category.find(query).lean();
   const categoryMap = {};
   categories.forEach((category) => {
     categoryMap[category._id.toString()] = { ...category, children: [] };
@@ -112,3 +126,14 @@ export const getCategoriesTree = asyncHandler(async (req, res) => {
 });
 
 export const getAllCategoriesTree = getCategoriesTree;
+
+export const getVisibleCategories = asyncHandler(async (req, res) => {
+  const categories = await Category.find({ isVisible: true }).sort({
+    createdAt: -1,
+  });
+  return sendSuccess(
+    res,
+    categories,
+    "Visible categories fetched successfully"
+  );
+});
