@@ -7,6 +7,7 @@ import morgan from "morgan";
 import connectDB from "./config/db.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import bannerRoutes from "./routes/bannerRoutes.js";
+import campaignRoutes from "./routes/campaignRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
@@ -37,6 +38,7 @@ app.get("/", (req, res) => {
 });
 app.use("/api/categories", categoryRoutes);
 app.use("/api/banners", bannerRoutes);
+app.use("/api/campaigns", campaignRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/products", productRoutes);
 
