@@ -10,6 +10,7 @@ import bannerRoutes from "./routes/bannerRoutes.js";
 import campaignRoutes from "./routes/campaignRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
+import announcementRoutes from "./routes/announcementRoutes.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 
 connectDB();
@@ -41,6 +42,7 @@ app.use("/api/banners", bannerRoutes);
 app.use("/api/campaigns", campaignRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/announcements", announcementRoutes);
 
 // Error Handling
 app.use(notFoundHandler);
