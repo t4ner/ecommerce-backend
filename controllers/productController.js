@@ -193,3 +193,35 @@ export const getFeaturedProducts = asyncHandler(async (req, res) => {
 
   return sendSuccess(res, products, "Featured products fetched successfully");
 });
+
+export const getProductsByCategorySlug = asyncHandler(async (req, res) => {
+  const { slug } = req.params;
+  const { isActive } = req.query;
+
+  // Kategoriyi slug'a göre bul
+  const category = await Category.findOne({ slug: slug.toLowerCase() });
+
+  if (!category) {
+    return sendError(res, "Category not found", 404);
+  }
+
+  // Query oluştur
+  const query = { category: category._id };
+
+  // İsteğe bağlı aktif ürün filtresi
+  if (isActive !== undefined) {
+    query.isActive = isActive === "true";
+  }
+
+  // Ürünleri getir
+  const products = await Product.find(query)
+    .populate("category", "name slug")
+    .populate("subCategory", "name slug")
+    .sort({ createdAt: -1 });
+
+  return sendSuccess(
+    res,
+    products,
+    `Products fetched successfully for category: ${category.name}`
+  );
+});
