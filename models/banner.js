@@ -22,8 +22,8 @@ const BannerSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
       match: [
-        /^[a-z0-9-]+$/,
-        "Slug may contain only lowercase letters, numbers, and hyphens",
+        /^[a-z0-9-/]+$/,
+        "Slug may contain only lowercase letters, numbers, hyphens, and forward slashes",
       ],
     },
   },
