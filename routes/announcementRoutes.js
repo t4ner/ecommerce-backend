@@ -6,6 +6,7 @@ import {
   updateAnnouncement,
   deleteAnnouncement,
 } from "../controllers/announcementController.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -19,10 +20,13 @@ const router = express.Router();
  * DELETE /api/announcements/deleteAnnouncement/:id      - Announcement sil
  */
 
-router.post("/createAnnouncement", createAnnouncement);
+// Public routes (herkes erişebilir)
 router.get("/getAllAnnouncements", getAnnouncements);
 router.get("/getAnnouncementById/:id", getAnnouncementById);
-router.put("/updateAnnouncement/:id", updateAnnouncement);
-router.delete("/deleteAnnouncement/:id", deleteAnnouncement);
+
+// Protected routes (token gerekli)
+router.post("/createAnnouncement", protect, createAnnouncement);
+router.put("/updateAnnouncement/:id", protect, updateAnnouncement);
+router.delete("/deleteAnnouncement/:id", protect, deleteAnnouncement);
 
 export default router;

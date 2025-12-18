@@ -8,6 +8,7 @@ import {
   getAllCategoriesTree,
   getVisibleCategories,
 } from "../controllers/categoryController.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -23,12 +24,15 @@ const router = express.Router();
  * GET    /api/categories/getVisibleCategories  - Sadece görünür kategorileri getir
  */
 
-router.post("/createCategory", createCategory);
+// Public routes (herkes erişebilir)
 router.get("/getAllCategories", getCategories);
-router.delete("/deleteCategory/:id", deleteCategory);
-router.put("/updateCategory/:id", updateCategory);
 router.get("/getCategoryBySlug/:slug", getCategoryBySlug);
 router.get("/getAllCategoriesTree", getAllCategoriesTree);
 router.get("/getVisibleCategories", getVisibleCategories);
+
+// Protected routes (token gerekli)
+router.post("/createCategory", protect, createCategory);
+router.put("/updateCategory/:id", protect, updateCategory);
+router.delete("/deleteCategory/:id", protect, deleteCategory);
 
 export default router;

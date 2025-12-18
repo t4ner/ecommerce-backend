@@ -5,6 +5,7 @@ import {
   uploadMultipleImages,
   deleteImage,
 } from "../controllers/uploadController.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -16,8 +17,9 @@ const router = express.Router();
  * DELETE /api/upload?public_id=... - Resim sil
  */
 
-router.post("/single", upload.single("image"), uploadImage);
-router.post("/multiple", upload.array("images", 10), uploadMultipleImages);
-router.delete("/", deleteImage);
+// Protected routes (token gerekli - sadece giriş yapmış kullanıcılar yükleyebilir)
+router.post("/single", protect, upload.single("image"), uploadImage);
+router.post("/multiple", protect, upload.array("images", 10), uploadMultipleImages);
+router.delete("/", protect, deleteImage);
 
 export default router;

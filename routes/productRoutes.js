@@ -10,6 +10,7 @@ import {
   getFeaturedProducts,
   getProductsByCategorySlug,
 } from "../controllers/productController.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -27,14 +28,17 @@ const router = express.Router();
  * GET    /api/products/getProductsByCategorySlug/:slug - Kategori slug'ına göre ürünleri getir
  */
 
-router.post("/createProduct", createProduct);
+// Public routes (herkes erişebilir)
 router.get("/getAllProducts", getProducts);
 router.get("/getProductBySlug/:slug", getProductBySlug);
 router.get("/getProductById/:id", getProductById);
-router.put("/updateProduct/:id", updateProduct);
-router.delete("/deleteProduct/:id", deleteProduct);
 router.get("/getActiveProducts", getActiveProducts);
 router.get("/getFeaturedProducts", getFeaturedProducts);
 router.get("/getProductsByCategorySlug/:slug", getProductsByCategorySlug);
+
+// Protected routes (token gerekli)
+router.post("/createProduct", protect, createProduct);
+router.put("/updateProduct/:id", protect, updateProduct);
+router.delete("/deleteProduct/:id", protect, deleteProduct);
 
 export default router;

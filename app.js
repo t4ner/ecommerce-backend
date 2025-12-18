@@ -12,6 +12,7 @@ import uploadRoutes from "./routes/uploadRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import announcementRoutes from "./routes/announcementRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import cartRoutes from "./routes/cartRoutes.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 
 connectDB();
@@ -45,6 +46,7 @@ app.use("/api/campaigns", campaignRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/announcements", announcementRoutes);
+app.use("/api/cart", cartRoutes);
 
 // Error Handling
 app.use(notFoundHandler);

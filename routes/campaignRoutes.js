@@ -7,6 +7,7 @@ import {
   updateCampaign,
   deleteCampaign,
 } from "../controllers/campaignController.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -21,11 +22,14 @@ const router = express.Router();
  * DELETE /api/campaigns/deleteCampaign/:id     - Campaign sil
  */
 
-router.post("/createCampaign", createCampaign);
+// Public routes (herkes erişebilir)
 router.get("/getAllCampaigns", getCampaigns);
 router.get("/getCampaignById/:id", getCampaignById);
 router.get("/getCampaignBySlug/:slug", getCampaignBySlug);
-router.put("/updateCampaign/:id", updateCampaign);
-router.delete("/deleteCampaign/:id", deleteCampaign);
+
+// Protected routes (token gerekli)
+router.post("/createCampaign", protect, createCampaign);
+router.put("/updateCampaign/:id", protect, updateCampaign);
+router.delete("/deleteCampaign/:id", protect, deleteCampaign);
 
 export default router;
