@@ -17,7 +17,7 @@ const router = express.Router();
  * POST   /api/cart/addToCart                  - Sepete ürün ekle
  * PUT    /api/cart/updateCartItem/:productId  - Sepetteki ürün miktarını güncelle
  * DELETE /api/cart/removeFromCart/:productId  - Sepetten ürün sil
- * DELETE /api/cart/clearCart                  - Sepeti temizle
+ * DELETE /api/cart/clearCart                  - Sepeti temizlen
  */
 
 // Tüm sepet işlemleri için authentication gerekli

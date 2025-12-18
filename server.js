@@ -1,6 +1,6 @@
 import app from './app.js';
 
-const PORT = process.env.PORT || 5858;
+const PORT = 5858;
 
 const server = app.listen(PORT, () => {
   console.log('='.repeat(50));
