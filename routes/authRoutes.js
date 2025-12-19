@@ -5,14 +5,16 @@ import {
   logout,
   refreshToken,
   getUsers,
+  adminLogin,
 } from "../controllers/authController.js";
 
-import { protect } from "../middleware/authMiddleware.js";
+import { protect, admin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 router.post("/register", register);
 router.post("/login", login);
+router.post("/admin/login", adminLogin);
 router.post("/logout", logout);
 router.get("/refresh", refreshToken);
 
@@ -21,6 +23,6 @@ router.get("/me", protect, (req, res) => {
   res.json({ user: req.user });
 });
 
-router.get("/users", protect, getUsers);
+router.get("/users", protect, admin, getUsers);
 
 export default router;

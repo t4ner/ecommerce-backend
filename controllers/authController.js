@@ -17,7 +17,7 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // REGISTER
 export const register = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, role } = req.body;
 
   if (!name || !email || !password) {
     return sendError(res, "Tüm alanlar zorunludur", 400);
@@ -39,10 +39,15 @@ export const register = asyncHandler(async (req, res) => {
     return sendError(res, "Bu email zaten kayıtlı", 400);
   }
 
+  // Role kontrolü - sadece "user" veya "admin" kabul et
+  const userRole =
+    role && (role === "admin" || role === "user") ? role : "user";
+
   const user = await User.create({
     name: name.trim(),
     email: normalizedEmail,
     password,
+    role: userRole,
   });
 
   const { accessToken, refreshToken } = generateTokens(user._id);
@@ -57,6 +62,7 @@ export const register = asyncHandler(async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        role: user.role,
       },
     },
     "Kayıt başarılı",
@@ -97,6 +103,7 @@ export const login = asyncHandler(async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        role: user.role,
       },
     },
     "Giriş başarılı"
@@ -136,6 +143,52 @@ export const refreshToken = asyncHandler(async (req, res) => {
   } catch (err) {
     return sendError(res, "Geçersiz token", 401);
   }
+});
+
+// ADMIN LOGIN
+export const adminLogin = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return sendError(res, "Email ve şifre gereklidir", 400);
+  }
+
+  const normalizedEmail = email.toLowerCase().trim();
+  const user = await User.findOne({ email: normalizedEmail }).select(
+    "+password"
+  );
+
+  if (!user) {
+    return sendError(res, "Hatalı email veya şifre", 400);
+  }
+
+  // Admin kontrolü
+  if (user.role !== "admin") {
+    return sendError(res, "Admin yetkisi gerekli", 403);
+  }
+
+  const isMatch = await user.comparePassword(password);
+  if (!isMatch) {
+    return sendError(res, "Hatalı email veya şifre", 400);
+  }
+
+  const { accessToken, refreshToken } = generateTokens(user._id);
+
+  res.cookie("refreshToken", refreshToken, cookieOptions);
+
+  return sendSuccess(
+    res,
+    {
+      accessToken,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    },
+    "Admin girişi başarılı"
+  );
 });
 
 // GET ALL USERS

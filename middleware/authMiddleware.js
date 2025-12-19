@@ -30,3 +30,15 @@ export const protect = async (req, res, next) => {
     res.status(401).json({ message: "Token doğrulanamadı" });
   }
 };
+
+export const admin = async (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({ message: "Önce giriş yapmalısınız" });
+  }
+
+  if (req.user.role !== "admin") {
+    return res.status(403).json({ message: "Admin yetkisi gerekli" });
+  }
+
+  next();
+};
