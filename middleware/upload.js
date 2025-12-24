@@ -6,15 +6,18 @@ const ALLOWED_IMAGE_TYPES = [
   "image/png",
   "image/webp",
   "image/gif",
+  "image/svg+xml",
 ];
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const MAX_FILE_SIZE = 8 * 1024 * 1024;
 
 const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
   if (ALLOWED_IMAGE_TYPES.includes(file.mimetype)) return cb(null, true);
   cb(
-    new Error(`Unsupported file type. Allowed: ${ALLOWED_IMAGE_TYPES.join(", ")}`),
+    new Error(
+      `Unsupported file type. Allowed: ${ALLOWED_IMAGE_TYPES.join(", ")}`
+    ),
     false
   );
 };
