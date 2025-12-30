@@ -15,6 +15,10 @@ const BannerSchema = new mongoose.Schema(
       required: [true, "Image URL is required"],
       trim: true,
     },
+    imageUrlMobile: {
+      type: String,
+      trim: true,
+    },
     slug: {
       type: String,
       required: [true, "Slug is required"],

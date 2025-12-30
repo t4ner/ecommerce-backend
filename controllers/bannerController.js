@@ -3,13 +3,14 @@ import { sendSuccess, sendError } from "../utils/responseHandler.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const createBanner = asyncHandler(async (req, res) => {
-  const { title, imageUrl, slug } = req.body;
+  const { title, imageUrl, imageUrlMobile, slug } = req.body;
   if (await Banner.findOne({ slug })) {
     return sendError(res, "This slug is already in use", 400);
   }
   const banner = await Banner.create({
     title: title.trim(),
     imageUrl: imageUrl.trim(),
+    imageUrlMobile: imageUrlMobile?.trim(),
     slug: slug.trim().toLowerCase(),
   });
   return sendSuccess(res, banner, "Banner created successfully", 201);
@@ -40,7 +41,7 @@ export const getBannerById = asyncHandler(async (req, res) => {
 
 export const updateBanner = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { title, imageUrl, slug } = req.body;
+  const { title, imageUrl, imageUrlMobile, slug } = req.body;
   const banner = await Banner.findById(id);
   if (!banner) {
     return sendError(res, "Banner not found", 404);
@@ -57,6 +58,9 @@ export const updateBanner = asyncHandler(async (req, res) => {
   }
   banner.title = title?.trim() ?? banner.title;
   banner.imageUrl = imageUrl?.trim() ?? banner.imageUrl;
+  if (imageUrlMobile !== undefined) {
+    banner.imageUrlMobile = imageUrlMobile?.trim() ?? null;
+  }
   banner.slug = slug?.trim().toLowerCase() ?? banner.slug;
   await banner.save();
   return sendSuccess(res, banner, "Banner updated successfully");
