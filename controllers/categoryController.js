@@ -1,4 +1,4 @@
-import Category from "../models/Category.js";
+import Category from "../models/category.js";
 import { sendSuccess, sendError } from "../utils/responseHandler.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
